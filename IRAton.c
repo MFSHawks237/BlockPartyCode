@@ -1,7 +1,7 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTServo,  none)
-#pragma config(Sensor, S1,     ,               sensorI2CMuxController)
 #pragma config(Sensor, S2,     IR,             sensorHiTechnicIRSeeker1200)
 #pragma config(Sensor, S3,     gyro,           sensorI2CHiTechnicGyro)
+#pragma config(Sensor, S4,     ,               sensorI2CMuxController)
 #pragma config(Motor,  motorA,          Spinner,       tmotorNXT, PIDControl, encoder)
 #pragma config(Motor,  motorC,           ,             tmotorNXT, openLoop)
 #pragma config(Motor,  mtr_S1_C1_1,     Left,          tmotorTetrix, openLoop, encoder)
@@ -19,27 +19,28 @@
 //Last Edit: Armon 12-29-13
 //Driving and Turning finished 12-29-13
 
-#include "drivers/hitechnic-sensormux.h"
+/*#include "drivers/hitechnic-sensormux.h"
 #include "drivers/hitechnic-protoboard.h"
 #include "drivers/hitechnic-accelerometer.h"
 #include "drivers/hitechnic-eopd.h"
 #include "drivers/hitechnic-irseeker-v2.h"
 #include "JoystickDriver.c"
 #include "drivers/gyro.h"
-#include "Functions.h"
+#include "Functions.h"*/
+#include "utils.h"
 
-#define irpower 20
+/*#define irpower 20
 #define dslope 30/720
 #define maxPwr 10
 #define dminPwr 7
 #define minPwr 35
-#define BOUND(n, l, h) (((n) < (l))? (l): ((n) > (h))? (h): (n))
+#define BOUND(n, l, h) (((n) < (l))? (l): ((n) > (h))? (h): (n))*/
 
 #define eopd        msensor_s4_1
 #define accel       msensor_s4_2
-#define sonar       msensor_s4_3
+//#define color       msensor_s4_3
 
-GYRO  g_Gyro;
+/*GYRO  g_Gyro;
 float g_turnTarget = 0.0;
 bool  g_turnEnabled = false;
 float g_tolerance = 0.5;  //needs to be tuned
@@ -49,15 +50,15 @@ float g_driveTarget;
 float buffer = 5;
 bool irseek = true;
 int irval;
-int i;
+int i;*/
 
-void SetTurnTarget(float angle)
+/*void SetTurnTarget(float angle)
 {
 	g_turnTarget = GyroGetHeading(g_Gyro) + angle;
 	g_turnEnabled = true;
-}
+}*/
 
-void TurnTask()
+/*void TurnTask()
 {
 	if (g_turnEnabled)
 	{
@@ -79,23 +80,23 @@ void TurnTask()
 			g_turnEnabled = false;
 		}
 	}
-}
+}*/
 
-void initializeRobot()
+/*void initializeRobot()
 {
 	GyroInit(g_Gyro, gyro, 0);
 	return;
-}
+}*/
 
-void setDistance(float target)
+/*void setDistance(float target)
 {
 	g_driveTarget = target + nMotorEncoder[Right];
 	g_driveEnabled = true;
-}
-float driveError;
-#define drivePower 100
+}*/
+//float driveError;
+//#define drivePower 100
 
-void driveForDistance()
+/*void driveForDistance()
 {
 	driveError = g_driveTarget - nMotorEncoder[Right];
 	if(abs(driveError) > buffer)
@@ -113,9 +114,9 @@ void driveForDistance()
 		motor[Right] = 0;
 		g_driveEnabled = false;
 	}
-}
+}*/
 
-void IRseeker()
+/*void IRseeker()
 {
 	while(irseek) //Fix the coming up short problem
 	{
@@ -161,15 +162,15 @@ void IRseeker()
 					motor[Right] = 0;
 				}
 			}*/
-			irseek = false;
+			/*irseek = false;
 			//nxtDisplayString( 1, "%d", irval);
 		}
 	}
-}
+}*/
 
 task main()
 {
-	waitForStart();
+	//waitForStart();
 	getJoystickSettings(joystick);
 	initializeRobot();
 	setDistance(520);
@@ -193,18 +194,11 @@ task main()
 	wait1Msec(500);
 	motor[Right] = 0;
 	motor[Left] = 0;*/
-	servo[aarm] = 200;
+	AtonScore();
+	/*servo[aarm] = 200;
 	wait1Msec(2000);
 	servo[aarm] = 0;
 	wait1Msec(2000);
-	motor[Left] = 50;
-	motor[Right] = -50;
-	wait1Msec(1000);
-	motor[Left] = 100;
-	motor[Right] = 100;
-	wait1Msec(1350);
-	motor[Left] = 0;
-	motor[Right] = 0;
 	servo[aarm] = 60;
-	wait1Msec(2000);
+	wait1Msec(2000);*/
 }
