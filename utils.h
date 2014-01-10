@@ -152,19 +152,7 @@ void IRseeker()
 					irseek = false;
 				}
 			}
-			/*while(i != 0)
-			{
-				motor[Left] = 10;
-				motor[Right] = 10;
-				i--;
-				if (i == 1)
-				{
-					motor[Left] = 0;
-					motor[Right] = 0;
-				}
-			}*/
 			irseek = false;
-			//nxtDisplayString( 1, "%d", irval);
 		}
 	}
 }
