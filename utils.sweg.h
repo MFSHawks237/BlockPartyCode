@@ -7,16 +7,13 @@
 #include "drivers/gyro.h" //Gyroscopic Sensor Driver
 #include "Functions.h"
 
-#define flagSpinFWD 255
-#define flagSpinBKWD 0
-#define flagSpinSTP 128
 #define motorSTP 0
 #define motorMaxFWD 100
 #define motorMaxBKWD -100
-#define SrvoArmOUT 60
-#define SrvoArmIN 0
+#define SrvoArmOUT 120
+#define SrvoArmIN 255
 
-#define irpower 20
+#define irpower 15
 #define dslope 30/720
 #define maxPwr 10
 #define dminPwr 7
@@ -28,8 +25,8 @@
 GYRO  g_Gyro;
 float g_turnTarget = 0.0;
 bool  g_turnEnabled = false;
-float g_tolerance = 0.5;  //needs to be tuned
-float Kp = 0.1;           //proportion gain constant needs to be tuned
+float g_tolerance = 0.5;  // needs to be tuned
+float Kp = 0.1;           // proportion gain constant needs to be tuned
 bool g_driveEnabled = false;
 float g_driveTarget;
 float buffer = 5;
@@ -40,35 +37,38 @@ float driveError;
 int ENCDTMP;
 int DES;
 
-	//********//
-	// Teleop //
-	//********//
+//********//
+// Teleop //
+//********//
 
 void Drive(tMotor Left, tMotor Right)
 {
-	motor[Left] = joystick.joy1_y1;		//Left Drive
-	motor[Right] = joystick.joy1_y2;		//Right Drive
+	motor[Left] = joystick.joy1_y1;		// Left Drive
+	motor[Right] = joystick.joy1_y2;		// Right Drive
 }
 
 void Arm(tMotor Lift, tMotor Wrist)
 {
-	motor[Lift] = joystick.joy2_y1;		//Both Lift Motors
-	motor[Wrist] = joystick.joy2_y2*0.5;		//Wrist Motor at half power
+	motor[Lift] = joystick.joy2_y1;		// Both Lift Motors
+	motor[Wrist] = joystick.joy2_y2*0.5;		// Wrist Motor at half power
 }
 
 void Spin()
 {
-	if (joy2Btn(8))
+	if(joy2Btn(8))
 	{
-		motor[Spinner] = motorMaxFWD;		//Spins block intake
+		motor[Spin1] = motorMaxFWD;		// Full forward pulls in blocks
+		motor[Spin2] = motorMaxFWD;
 	}
 	else if(joy2Btn(7))
 	{
-		motor[Spinner] = motorMaxBKWD;		//Reverses the spin
+		motor[Spin1] = motorMaxBKWD;		// Full backward spits out blocks
+		motor[Spin2] = motorMaxBKWD;
 	}
 	else
 	{
-		motor[Spinner] = motorSTP;		//Prevents spontaneous movement
+		motor[Spin1] = motorSTP;		// Prevent movement
+		motor[Spin2] = motorSTP;
 	}
 }
 
@@ -76,42 +76,33 @@ void FlagSpin()
 {
 	if (joy1Btn(8)||joy2Btn(6))
 	{
-		servo[Flag] = flagSpinFWD;		//Spins Flag
-		servo[Flag2] = flagSpinFWD;
+		motor[Flag] = motorMaxFWD;		// Spins Flag
 	}
 	else if(joy1Btn(7)||joy2Btn(5))
 	{
-		servo[Flag] = flagSpinBKWD;		//Reverses the spin
-		servo[Flag2] = flagSpinBKWD;
+		motor[Flag] = motorMaxBKWD;		// Reverses the spin
 	}
 	else
 	{
-		servo[Flag] = flagSpinSTP;		//Prevents spontaneous movement
-		servo[Flag2] = flagSpinSTP;
+		motor[Flag] = motorSTP;		// Prevents spontaneous movement
 	}
 }
-
-/*void flagSpinUP()
-{
-servo[Flag] = flagSpinFWD;		//Spins Flag
-servo[Flag2] = flagSpinFWD;
-}*/
 
 void AtonAarm()
 {
 	if (joy2Btn(3))
 	{
-		servo[aarm] = SrvoArmOUT;		//Clears Aton arm of lift
+		servo[aarm] = SrvoArmOUT;		// Clears Aton arm of lift
 	}
 	else if (joy2Btn(1))
 	{
-		servo[aarm] = SrvoArmIN;		//Moves Aton arm to start position
+		servo[aarm] = SrvoArmIN;		// Moves Aton arm to start position
 	}
 }
 
-	//*****************//
-	// Autonomous Code //
-	//*****************//
+//*****************//
+// Autonomous Code //
+//*****************//
 
 void SetTurnTarget(float angle)
 {
@@ -188,7 +179,7 @@ void IRseeker()
 		}
 		else
 		{
-			i = 0;
+			/*i = 0;
 			while(irseek)
 			{
 				irval = SensorValue[IR];
@@ -210,17 +201,19 @@ void IRseeker()
 					i = i / 2;
 					irseek = false;
 				}
-			}
+			}*/
 			irseek = false;
+			motor[Left] = 0;
+			motor[Right] = 0;
 		}
 	}
 }
 
 void AtonScore()
 {
-	servo[aarm] = 200; // Score the block
+	servo[aarm] = 0; // Score the block
 	wait1Msec(1500);
-	servo[aarm] = 60; // Move to clear position
+	servo[aarm] = 200; // Move to clear position
 	wait1Msec(2000);
 }
 
@@ -241,19 +234,22 @@ void RampGo()
 	}
 	motor[Left] = 0;
 	motor[Right] = 0;
-	SetTurnTarget(75.0);
+	SetTurnTarget(70.0);
 	while(g_turnEnabled) // Turn perpendicular to the ramp
 	{
 		GyroTask(g_Gyro);
 		TurnTask();
 		wait1Msec(10);
 	}
+	motor[Lift] = 30;
+	wait1Msec(400);
+	motor[Lift] = 0;
 	setDistance(5000);
 	while(g_driveEnabled) // Drive to the approximate center of the ramp
 	{
 		driveForDistance();
 	}
-	SetTurnTarget(85.0);
+	SetTurnTarget(90.0);
 	while(g_turnEnabled) // Turn towards the ramp
 	{
 		GyroTask(g_Gyro);

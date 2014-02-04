@@ -1,8 +1,8 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTServo,  none)
-#pragma config(Sensor, S1,     ,               sensorI2CMuxController)
 #pragma config(Sensor, S2,     IR,             sensorHiTechnicIRSeeker1200)
 #pragma config(Sensor, S3,     gyro,           sensorI2CHiTechnicGyro)
-#pragma config(Motor,  motorA,          Spinner,       tmotorNXT, PIDControl, encoder)																																																																																																																																																																																																																																																												f		f																							f	fff	f	f	f
+#pragma config(Sensor, S4,     eopd,           sensorAnalogActive)
+#pragma config(Motor,  motorA,          Spinner,       tmotorNXT, PIDControl, encoder)
 #pragma config(Motor,  motorC,           ,             tmotorNXT, openLoop)
 #pragma config(Motor,  mtr_S1_C1_1,     Left,          tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C1_2,     Right,         tmotorTetrix, openLoop, reversed)
@@ -25,46 +25,45 @@ task main()
 	while (true)
 	{
 		getJoystickSettings(joystick);
-		Drive(Left, Right);
-		/*motor[Left] = joystick.joy1_y1;		//Left Drive
-		motor[Right] = joystick.joy1_y2;		//Right Drive*/
-		Arm(Lift, Wrist);
-		/*motor[Lift] = joystick.joy2_y1;		//Both Lift Motors
-		motor[Wrist] = joystick.joy2_y2*0.5;		//Wrist Motor*/
-		if (joy2Btn(8))
+		Drive(Left, Right); // joystick1 drive
+		Arm(Lift, Wrist); // joystick2 arm and wrist
+		Spin(); // Controls block collector
+		/*if (joy2Btn(8))
 		{
-			motor[Spinner] = motorMaxFWD;		//Spins block intake
+		motor[Spinner] = motorMaxFWD;		//Spins block intake
 		}
 		else if(joy2Btn(7))
 		{
-			motor[Spinner] = motorMaxBKWD;		//Reverses the spin
+		motor[Spinner] = motorMaxBKWD;		//Reverses the spin
 		}
 		else
 		{
-			motor[Spinner] = motorSTP;		//Prevents spontaneous movement
-		}
-		if (joy1Btn(8)||joy2Btn(6))
+		motor[Spinner] = motorSTP;		//Prevents spontaneous movement
+		}*/
+		FlagSpin(); // Controls flag spinner
+		/*if (joy1Btn(8)||joy2Btn(6))
 		{
-			servo[Flag] = flagSpinFWD;		//Spins Flag
-			servo[Flag2] = flagSpinFWD;
+		servo[Flag] = flagSpinFWD;		//Spins Flag
+		servo[Flag2] = flagSpinFWD;
 		}
 		else if(joy1Btn(7)||joy2Btn(5))
 		{
-			servo[Flag] = flagSpinBKWD;		//Reverses the spin
-			servo[Flag2] = flagSpinBKWD;
+		servo[Flag] = flagSpinBKWD;		//Reverses the spin
+		servo[Flag2] = flagSpinBKWD;
 		}
 		else
 		{
-			servo[Flag] = flagSpinSTP;		//Prevents spontaneous movement
-			servo[Flag2] = flagSpinSTP;
-		}
-		if (joy2Btn(3))
+		servo[Flag] = flagSpinSTP;		//Prevents spontaneous movement
+		servo[Flag2] = flagSpinSTP;
+		}*/
+		AtonAarm(); // Controls autonomous arm
+		/*if (joy2Btn(3))
 		{
-			servo[aarm] = SrvoArmOUT;		//Clears Aton arm of lift
+		servo[aarm] = SrvoArmOUT;		//Clears Aton arm of lift
 		}
 		else if (joy2Btn(1))
 		{
-			servo[aarm] = SrvoArmIN;		//Moves Aton arm to start position
-		}
+		servo[aarm] = SrvoArmIN;		//Moves Aton arm to start position
+		}*/
 	}
 }
