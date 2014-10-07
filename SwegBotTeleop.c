@@ -2,16 +2,17 @@
 #pragma config(Sensor, S1,     ,               sensorI2CMuxController)
 #pragma config(Sensor, S2,     IR,             sensorHiTechnicIRSeeker1200)
 #pragma config(Sensor, S3,     gyro,           sensorI2CHiTechnicGyro)
+#pragma config(Sensor, S4,     eopd,           sensorAnalogActive)
 #pragma config(Motor,  motorA,          Spin1,         tmotorNXT, PIDControl, encoder)
 #pragma config(Motor,  motorB,          Spin2,         tmotorNXT, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C1_1,     Left,          tmotorTetrix, openLoop, encoder)
 #pragma config(Motor,  mtr_S1_C1_2,     Right,         tmotorTetrix, openLoop, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C2_1,     Lift,          tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C2_2,     Flag,          tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C4_1,     Wrist,         tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C4_1,     assist,        tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C4_2,     motorI,        tmotorTetrix, openLoop)
 #pragma config(Servo,  srvo_S1_C3_1,    aarm,                 tServoStandard)
-#pragma config(Servo,  srvo_S1_C3_2,    servo2,               tServoNone)
+#pragma config(Servo,  srvo_S1_C3_2,    wrist,                tServoStandard)
 #pragma config(Servo,  srvo_S1_C3_3,    servo3,               tServoNone)
 #pragma config(Servo,  srvo_S1_C3_4,    servo4,               tServoNone)
 #pragma config(Servo,  srvo_S1_C3_5,    servo5,               tServoNone)
@@ -28,9 +29,16 @@ task main()
 	{
 		getJoystickSettings(joystick);
 		Drive(Left, Right); // joystick1 drive
-		Arm(Lift, Wrist); // joystick2 arm and wrist
+		Arm(Lift); // joystick2 arm
 		Spin(); // joystick2 basket spin
 		FlagSpin(); // joystick2 and 1 flag
-		AtonAarm();
+		AtonAarm(); // joystick2 aton arm
+		Wrist(); // joystick2 wrist
+		Assist(assist);
+		if (joy2Btn(10)) // arm speed control
+		{								 // starts slow
+			i = i + 1;
+			wait1Msec(500);
+		}
 	}
 }

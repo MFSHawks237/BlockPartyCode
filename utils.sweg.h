@@ -32,7 +32,9 @@ float g_driveTarget;
 float buffer = 5;
 bool irseek = true;
 int irval;
-int i;
+int i = 0;
+int bufferWrist = 15; //wrist stop buffer
+int a = 110; // wrist servo value
 float driveError;
 int ENCDTMP;
 int DES;
@@ -47,20 +49,31 @@ void Drive(tMotor Left, tMotor Right)
 	motor[Right] = joystick.joy1_y2;		// Right Drive
 }
 
-void Arm(tMotor Lift, tMotor Wrist)
+void Arm(tMotor Lift)//, tMotor Wrist)
 {
-	motor[Lift] = joystick.joy2_y1;		// Both Lift Motors
-	motor[Wrist] = joystick.joy2_y2*0.5;		// Wrist Motor at half power
+	if (i % 2 == 0)
+	{
+		motor[Lift] = joystick.joy2_y1*0.7;		// Both Lift Motors
+		if (motor[Lift] < -25)
+		{
+			motor[Lift] = -25;
+		}
+	}
+	else if (i % 2 == 1)
+	{
+		motor[Lift] = joystick.joy2_y1;		// Both Lift Motors
+	}
+	//motor[Wrist] = joystick.joy2_y2*0.5;		// Wrist Motor at half power
 }
 
 void Spin()
 {
-	if(joy2Btn(8))
+	if(joy2Btn(7))
 	{
 		motor[Spin1] = motorMaxFWD;		// Full forward pulls in blocks
 		motor[Spin2] = motorMaxFWD;
 	}
-	else if(joy2Btn(7))
+	else if(joy2Btn(8))
 	{
 		motor[Spin1] = motorMaxBKWD;		// Full backward spits out blocks
 		motor[Spin2] = motorMaxBKWD;
@@ -97,6 +110,70 @@ void AtonAarm()
 	else if (joy2Btn(1))
 	{
 		servo[aarm] = SrvoArmIN;		// Moves Aton arm to start position
+	}
+}
+
+void Wrist()
+{
+	if (joystick.joy2_y2 < -bufferWrist)
+	{
+		a = a - 2;
+		servo[wrist] = a; // full forward
+		wait1Msec(50);
+		if (a >= 255)
+		{
+			a = 255;
+			servo[wrist] = a;
+			PlaySound(soundBeepBeep);
+			wait1Msec(500);
+		}
+	}
+	else if (joystick.joy2_y2 > bufferWrist)
+	{
+		a = a + 2;
+		servo[wrist] = a; // full back
+		wait1Msec(50);
+		if (a <= 10)
+		{
+			a = 10;
+			servo[wrist] = a;
+			PlaySound(soundBeepBeep);
+			wait1Msec(500);
+		}
+	}
+	else
+	{
+		if (a <= 10)
+		{
+			a = 10;
+			servo[wrist] = a;
+			PlaySound(soundBeepBeep);
+			wait1Msec(500);
+		}
+		else if (a >= 255)
+		{
+			a = 255;
+			servo[wrist] = a;
+			PlaySound(soundBeepBeep);
+			wait1Msec(500);
+		}
+		wait1Msec(50);
+	}
+}
+
+void Assist(tMotor assist)
+{
+	if (joy1Btn(5) || joy2Btn(4))
+	{
+		motor[assist] = 100;
+	}
+	else if (joy1Btn(6) || joy2Btn(2))
+	{
+		motor[assist] = -100;
+	}
+	else
+	{
+		motor[assist] = 0;
 	}
 }
 
@@ -179,29 +256,6 @@ void IRseeker()
 		}
 		else
 		{
-			/*i = 0;
-			while(irseek)
-			{
-				irval = SensorValue[IR];
-				if(irval != 6 || irval != 4)
-				{
-					i++;
-					motor[Left] = irpower/2.5;
-					motor[Right] = irpower/2.5;
-					if (i <= 0)
-					{
-						i = i / 2;
-						irseek = false;
-					}
-				}
-				else
-				{
-					motor[Left] = 0;
-					motor[Right] = 0;
-					i = i / 2;
-					irseek = false;
-				}
-			}*/
 			irseek = false;
 			motor[Left] = 0;
 			motor[Right] = 0;
@@ -220,14 +274,26 @@ void AtonScore()
 void RampGo()
 {
 	DES = nMotorEncoder[Right] - ENCDTMP; // Get the distance we traveled while seeking the IR
-	SetTurnTarget(170.0);
+	SetTurnTarget(87.5);
+	while(g_turnEnabled) // Turn the robot Perp
+	{
+		GyroTask(g_Gyro);
+		TurnTask();
+		wait1Msec(10);
+	}
+	setDistance(225);
+	while(g_driveEnabled) // Drive further from baskets
+	{
+		driveForDistance();
+	}
+	SetTurnTarget(87.5);
 	while(g_turnEnabled) // Turn the robot around
 	{
 		GyroTask(g_Gyro);
 		TurnTask();
 		wait1Msec(10);
 	}
-	setDistance(DES/1.1);
+	setDistance(DES/1.15);
 	while(g_driveEnabled) // Drive back a slightly shorter distance than what we initially traveled
 	{
 		driveForDistance();
@@ -249,14 +315,14 @@ void RampGo()
 	{
 		driveForDistance();
 	}
-	SetTurnTarget(90.0);
+	SetTurnTarget(98.5);
 	while(g_turnEnabled) // Turn towards the ramp
 	{
 		GyroTask(g_Gyro);
 		TurnTask();
 		wait1Msec(10);
 	}
-	setDistance(5000);
+	setDistance(5400);
 	while(g_driveEnabled) // Drive on to the ramp
 	{
 		driveForDistance();
